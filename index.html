@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/normalize.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.0.min.js"><\/script>')</script>
+        <script src="js/vendor/jquery.qrcode-0.7.0.min.js"></script>
+
+
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="header-container">
+            <header class="wrapper clearfix">
+                <h1 class="title">Welcome to the ITB hotspot</h1>
+                <nav>
+<!--                     <ul>
+                        <li><a href="#">nav ul li a</a></li>
+                        <li><a href="#">nav ul li a</a></li>
+                        <li><a href="#">nav ul li a</a></li>
+                    </ul> -->
+                </nav>
+            </header>
+        </div>
+
+        <div class="main-container">
+            <div class="main wrapper clearfix">
+
+<!-- prompt visitors to activate JavaScript -->
+<noscript><h1>Your browser has JavaScript disabled. Please enable JavaScript to access the payment page.</h1></noscript>
+
+<script language="JavaScript">
+//we need to wait for the DOM to be fully loaded for jQuery to be operational.
+$(document).ready(function () {
+
+//a variable that will be compared with the value stored in the db, to prevent unnecessary page refreshes.
+var last_transaction_amount = 0;
+
+var time_remaining = 0;
+
+//Display a loading message while the ajax request is performed
+$("#status").html("Loading...");
+
+//Get updated status; infinite loop, 1s intervals
+setInterval(function() //setInterval does an inifinite loop
+{
+    //get the status of the payment for this client
+    $.getJSON("backend.php",
+        {request_type: 'display_payment_status'},
+        function(response){
+            //if
+                //user is new: needs a welcome screen
+            //or
+                        //user just sent funds
+                    //or
+                        //user just ran out of funds
+                //and
+                    //last transaction amount different from stored transaction amount (this is to refresh page only when necessary --when a new transaction happends)
+            if(response.payment_status == 'welcome_screen' || ((response.payment_status == 'new_balance' || response.payment_status == 'balance_empty') && response.last_transaction_amount != last_transaction_amount)) {
+                //the client just sent money, or just ran out of money ! that means we need to load a new page to confirm good reception of the funds or funds exhaustion.
+                last_transaction_amount = response.last_transaction_amount;
+                if (response.time_remaining != null) {time_remaining = response.time_remaining;}
+                $("#status").slideUp(function(){
+                $("#status").html(response.html_body);
+                //generate a QR code
+                $("#qr_code").qrcode({
+                    render: 'div',
+                    width: 100,
+                    height: 100,
+                    text: $('#bitcoin_address_uri').attr('href')
+                });
+                $("#address").hide();
+                $("#link_show_address").click(function(){$(this).hide(function(){$("#address").slideDown();})})
+                }).slideDown('slow');
+            }
+    });
+
+    //simple time countdown in seconds
+    if (time_remaining != null){
+        if(time_remaining >= 0){
+            time_remaining--;
+            $("#time_remaining").html(time_remaining + ' seconds');
+        }
+    }
+
+
+
+    // $.ajax({ 
+    // url: "backend.php",
+    // data: { request_type: "display_payment_status" },
+    // success: function(data) //if the request is successful, then...
+    //     {
+    //         if (data != $("#status").html) //if the response is different from the current contents...
+    //         {
+    //             $("#status").slideUp();
+    //             $("#status").html(data); //...then replace the current contents with the contents sent in the response.
+    //             $("#qr_code").qrcode({
+    //                 render: 'div',
+    //                 width: 100,
+    //                 height: 100,
+    //                 text: 'sdf'
+    //             });
+    //             $("#status").slideDown();
+    //         }
+    //     }
+    //}); //That's it for the ajax part !
+
+
+}, 1000); // the aforementioned 1s interval
+
+//Here we take care of the countdown to credit exhaustion
+// setInterval(function(){ //another setInterval, they're asynchronous so no conflict with the other one
+//     if($("#countdown").length) //this tests whether the #countdown element is present (.length is enough)
+//     {
+        
+//     }
+// }, 1000); // 
+
+
+});
+</script>
+
+<!-- all AJAX responses will be displayed here -->
+<div id="status"></div>
+
+
+</div>
+
+
+<!--                 <aside>
+                    <h3>aside</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sodales urna non odio egestas tempor. Nunc vel vehicula ante. Etiam bibendum iaculis libero, eget molestie nisl pharetra in. In semper consequat est, eu porta velit mollis nec. Curabitur posuere enim eget turpis feugiat tempor. Etiam ullamcorper lorem dapibus velit suscipit ultrices.</p>
+                </aside> -->
+
+            </div> <!-- #main -->
+        </div> <!-- #main-container -->
+
+        <div class="footer-container">
+            <footer class="wrapper">
+                <h3>Sean Murnin - Youri Le Cottier - Institute of Technology Blanchardstown</h3>
+                <img src="img/bitcoin_accepted_here.png" />
+
+            </footer>
+        </div>
+
+
+        <script src="js/main.js"></script>
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!-- <script> 
+             (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+             function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+             e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+             e.src='//www.google-analytics.com/analytics.js';
+             r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+             ga('create','UA-XXXXX-X');ga('send','pageview'); 
+         </script> -->
+    </body>
+</html>
