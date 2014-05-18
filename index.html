@@ -49,7 +49,7 @@
 $(document).ready(function () {
 
 //a variable that will be compared with the value stored in the db, to prevent unnecessary page refreshes.
-var last_transaction_amount = 0;
+var last_transaction_amount = 0.0;
 
 var time_remaining = 0;
 
@@ -61,17 +61,8 @@ setInterval(function() //setInterval does an inifinite loop
 {
     //get the status of the payment for this client
     $.getJSON("backend.php",
-        {request_type: 'display_payment_status'},
         function(response){
-            //if
-                //user is new: needs a welcome screen
-            //or
-                        //user just sent funds
-                    //or
-                        //user just ran out of funds
-                //and
-                    //last transaction amount different from stored transaction amount (this is to refresh page only when necessary --when a new transaction happends)
-            if(response.payment_status == 'welcome_screen' || ((response.payment_status == 'new_balance' || response.payment_status == 'balance_empty') && response.last_transaction_amount != last_transaction_amount)) {
+            if(response.last_transaction_amount != last_transaction_amount) { //this is to prevent unnecessary page refreshes
                 //the client just sent money, or just ran out of money ! that means we need to load a new page to confirm good reception of the funds or funds exhaustion.
                 last_transaction_amount = response.last_transaction_amount;
                 if (response.time_remaining != null) {time_remaining = response.time_remaining;}

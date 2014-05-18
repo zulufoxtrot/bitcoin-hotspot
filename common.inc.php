@@ -5,35 +5,36 @@
 include('lib/easybitcoin.php');
 
 
+
+//set timezone
+date_default_timezone_set('UTC');
+
+
+
 //////
 // RPC settings for communication with the bitcoind instance
-define('rpc_username', 'hotsp0t');
-define('rpc_password', 'brabrabra');
-define('rpc_address', '192.168.56.101');
-define('rpc_port', '8332');
+define('RPC_USERNAME', 'hotsp0t');
+define('RPC_PASSWORD', 'brabrabra');
+define('RPC_ADDRESS', '192.168.56.101');
+define('RPC_PORT', '8332');
 /////
 
 /////
-//set the per minute fare here !
+//set the per minute fare here
 //
 define("EURO_FARE", "0.1");
 //
 /////
 
 
-
-
-
-
-
-
 function connect_to_database(){
 //connects to the MySQL database system and selects the "bitcoin-hotspot" database
 	mysql_connect('localhost','root','fjf');
 	mysql_select_db('bitcoin-hotspot');
+	mysql_query("SET time_zone='+0:00'"); //set timezone to UTC
 }
 
-function get_exchange_rate(){
+function get_online_exchange_rate(){
 //pulls the average EUR/BTC exchange rate from the bitcoinaverage API
 	$exchange_rate = file_get_contents("https://api.bitcoinaverage.com/ticker/global/EUR/last");
 	if (is_null($exchange_rate)){ //if the request failed...
